@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SITEC.WEB_API.Repository;
 
 namespace SITEC.WEB_API
 {
@@ -28,6 +29,7 @@ namespace SITEC.WEB_API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<HumanoContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ConnectionTest")));
+            services.AddTransient<IHumanoRepository, HumanoRepository>();
             services.AddControllers();
         }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SITEC.WEB_API.Data;
 using SITEC.WEB_API.Models;
+using SITEC.WEB_API.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,56 +16,54 @@ namespace SITEC.WEB_API.Controllers
     public class HumanosController : ControllerBase
     {
         #region Properties
-        private readonly HumanoContext _context; 
+        private readonly IHumanoRepository _humanoRepository;
         #endregion
 
         #region Constructor
-        public HumanosController(HumanoContext context)
+        public HumanosController(IHumanoRepository humanoRepository)
         {
-            _context = context;
+            _humanoRepository = humanoRepository;
         }
         #endregion
 
         #region Web API´s
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Humano>>> Get()
+        public IActionResult Get()
         {
-            return await _context.Humanos.ToListAsync();
+            var humanos = _humanoRepository.GetHumanos();
+            return new OkObjectResult(humanos);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Humano>> GetById(int id)
+        public IActionResult GetById(int id)
         {
-            var humano = await _context.Humanos.FindAsync(id);
+            var humano = _humanoRepository.GetHumanoByID(id);
 
             if (humano == null)
             {
                 return NotFound();
             }
 
-            return humano;
+            return new OkObjectResult(humano);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Humano>> Insert(Humano humano)
+        public IActionResult Insert(Humano humano)
         {
-            _context.Humanos.Add(humano);
-            await _context.SaveChangesAsync();
+            _humanoRepository.InsertHumano(humano);
 
             return CreatedAtAction(nameof(GetById), new { id = humano.Id }, humano);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Humano humano)
+        public IActionResult Update(int id, Humano humano)
         {
             if (id != humano.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(humano).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
+            _humanoRepository.UpdateHumano(humano);
 
             return Ok();
         }
@@ -72,17 +71,9 @@ namespace SITEC.WEB_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var humano = await _context.Humanos.FindAsync(id);
+            _humanoRepository.DeleteHumano(id);
 
-            if (humano == null)
-            {
-                NotFound();
-            }
-
-            _context.Humanos.Remove(humano);
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            return new OkResult();
         } 
         #endregion
 
